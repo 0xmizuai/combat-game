@@ -1,6 +1,7 @@
-import Web3 from 'web3';
 import { CONFIG } from '../utils/config';
 import { GameState } from '../types';
+import { getAccount } from 'wagmi/actions';
+import { config } from '../contexts/WalletContext';
 
 // This is a placeholder service for future blockchain integration
 // In a real implementation, this would connect to actual smart contracts
@@ -13,16 +14,13 @@ export const connectWallet = async (): Promise<string> => {
       return '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
     }
     
-    if (window.ethereum) {
-      const web3 = new Web3(window.ethereum);
-      // Ensure web3 is connected
-      if (!web3.currentProvider) {
-        throw new Error('Failed to initialize Web3 provider');
-      }
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }) as string[];
-      return accounts[0];
+    // Using wagmi to get the connected account
+    const account = getAccount(config);
+    
+    if (account.isConnected && account.address) {
+      return account.address;
     } else {
-      throw new Error('No Ethereum provider found');
+      throw new Error('No wallet connected');
     }
   } catch (error) {
     console.error('Failed to connect wallet', error);
@@ -119,15 +117,4 @@ export const claimRewardsOnBlockchain = async (address: string): Promise<number>
   console.log('Claiming rewards from blockchain', { address });
   // In a real implementation, this would call a smart contract function
   return 100; // Mock reward amount
-};
-
-// Add TypeScript interface for window.ethereum
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-      on: (event: string, callback: (...args: unknown[]) => void) => void;
-      removeListener: (event: string, callback: (...args: unknown[]) => void) => void;
-    };
-  }
-} 
+}; 

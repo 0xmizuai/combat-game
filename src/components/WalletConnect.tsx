@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from '@emotion/styled';
 import { useGame } from '../contexts/GameContext';
 import { truncateAddress } from '../utils/helpers';
 import { useToast } from '../contexts/ToastContext';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 
 const WalletSection = styled.div`
   text-align: center;
@@ -12,29 +14,13 @@ const WalletSection = styled.div`
   border-radius: 10px;
 `;
 
-const ConnectButton = styled.button`
-  background-color: var(--mizu-color);
-  color: white;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  
-  &:hover {
-    background-color: #2d9147;
-    transform: translateY(-2px);
-  }
-  
-  &:active {
-    transform: translateY(1px);
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
+const CustomConnectButton = styled.div`
+  .rainbow-button {
+    background-color: var(--mizu-color) !important;
+    
+    &:hover {
+      background-color: #2d9147 !important;
+    }
   }
 `;
 
@@ -47,6 +33,14 @@ const WalletAddress = styled.p`
 const WalletConnect: React.FC = () => {
   const { connectWallet, userState } = useGame();
   const { showToast } = useToast();
+  const { address, isConnected } = useAccount();
+  
+  // Sync the wallet state with the game context
+  useEffect(() => {
+    if (isConnected && address && !userState.connected) {
+      handleConnectWallet();
+    }
+  }, [isConnected, address]);
   
   const handleConnectWallet = async () => {
     try {
@@ -58,19 +52,66 @@ const WalletConnect: React.FC = () => {
   
   return (
     <WalletSection>
-      {!userState.connected ? (
-        <ConnectButton onClick={handleConnectWallet}>
-          Connect Wallet
-        </ConnectButton>
-      ) : (
-        <>
-          <ConnectButton disabled>
-            Wallet Connected
-          </ConnectButton>
-          <WalletAddress>
-            {truncateAddress(userState.address || '')}
-          </WalletAddress>
-        </>
+      <CustomConnectButton>
+        <ConnectButton.Custom>
+          {({
+            account,
+            chain,
+            openAccountModal,
+            openChainModal,
+            openConnectModal,
+            mounted,
+          }) => {
+            return (
+              <div
+                {...(!mounted && {
+                  'aria-hidden': true,
+                  style: {
+                    opacity: 0,
+                    pointerEvents: 'none',
+                    userSelect: 'none',
+                  },
+                })}
+              >
+                {(() => {
+                  if (!mounted || !account || !chain) {
+                    return (
+                      <button onClick={openConnectModal} type="button" className="rainbow-button">
+                        Connect Wallet
+                      </button>
+                    );
+                  }
+
+                  if (chain.unsupported) {
+                    return (
+                      <button onClick={openChainModal} type="button" className="rainbow-button">
+                        Wrong network
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <button
+                        onClick={openAccountModal}
+                        type="button"
+                        className="rainbow-button"
+                      >
+                        {account.displayName}
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
+            );
+          }}
+        </ConnectButton.Custom>
+      </CustomConnectButton>
+      
+      {userState.connected && (
+        <WalletAddress>
+          {truncateAddress(userState.address || '')}
+        </WalletAddress>
       )}
     </WalletSection>
   );

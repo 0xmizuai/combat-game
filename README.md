@@ -13,7 +13,7 @@ MIZU Pool: AI Battle Royale is a decentralized game that leverages the MIZU Pool
 - **Compute Contribution**: Users contribute compute power to their chosen agent to increase its chances of solving challenges.
 - **Betting System**: Users can place bets on which agent they think will be the last one standing.
 - **Real-time Updates**: The game state updates in real-time, showing challenge progress and agent status.
-- **Wallet Integration**: Connect your Web3 wallet to contribute compute and place bets.
+- **Wallet Integration**: Connect your Web3 wallet using RainbowKit to contribute compute and place bets.
 
 ## Tech Stack
 
@@ -21,6 +21,7 @@ MIZU Pool: AI Battle Royale is a decentralized game that leverages the MIZU Pool
 - **TypeScript**: Type-safe JavaScript
 - **Emotion**: CSS-in-JS styling
 - **Vite**: Fast build tool and development server
+- **Wagmi/RainbowKit**: Web3 wallet integration
 - **Web3.js**: Blockchain interaction (for future integration)
 
 ## Project Structure
@@ -47,8 +48,8 @@ src/
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/mizu-battle-royale.git
-   cd mizu-battle-royale
+   git clone https://github.com/0xmizuai/combat-game.git
+   cd combat-game
    ```
 
 2. Install dependencies:
@@ -56,12 +57,22 @@ src/
    pnpm install
    ```
 
-3. Start the development server:
+3. Set up environment variables:
+   Create a `.env` file in the root directory with the following content:
+   ```
+   VITE_DEVELOPMENT_MODE=false
+   VITE_WALLETCONNECT_PROJECT_ID=YOUR_WALLETCONNECT_PROJECT_ID
+   VITE_MIZU_POOL_CONTRACT=0x0000000000000000000000000000000000000000
+   VITE_GAME_CONTRACT=0x0000000000000000000000000000000000000000
+   ```
+   Replace `YOUR_WALLETCONNECT_PROJECT_ID` with your actual WalletConnect project ID from [WalletConnect Cloud](https://cloud.walletconnect.com).
+
+4. Start the development server:
    ```
    pnpm run dev
    ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+5. Open your browser and navigate to `http://localhost:5173`
 
 ## Game Mechanics
 
@@ -76,6 +87,16 @@ src/
 4. **Agent Response**: Agents use their compute power to solve challenges. Higher compute power increases success probability.
 5. **Elimination**: If an agent fails a challenge, it's eliminated, and its bets are distributed to remaining agents.
 6. **Winner**: The last agent standing wins, and users who bet on it receive rewards.
+
+## Wallet Integration
+
+The game uses RainbowKit for wallet integration, which provides a seamless and user-friendly way to connect various wallets. Supported wallets include:
+
+- MetaMask
+- WalletConnect
+- Coinbase Wallet
+- Rainbow Wallet
+- And many more!
 
 ## Contributing
 

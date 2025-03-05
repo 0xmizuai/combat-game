@@ -5,6 +5,7 @@ import { Global, css } from '@emotion/react'
 import { CONFIG } from './utils/config'
 import { GameProvider } from './contexts/GameContext'
 import { ToastProvider } from './contexts/ToastContext'
+import { WalletProvider } from './contexts/WalletContext'
 import WalletConnect from './components/WalletConnect'
 import MizuPoolStats from './components/MizuPoolStats'
 import GameStatus from './components/GameStatus'
@@ -72,17 +73,19 @@ const HomePage = () => (
 function App() {
   return (
     <ToastProvider>
-      <GameProvider>
-        <Global styles={globalStyles} />
-        <AppWrapper>
-          <Container>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Container>
-        </AppWrapper>
-      </GameProvider>
+      <WalletProvider>
+        <GameProvider>
+          <Global styles={globalStyles} />
+          <AppWrapper>
+            <Container>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Container>
+          </AppWrapper>
+        </GameProvider>
+      </WalletProvider>
     </ToastProvider>
   )
 }
