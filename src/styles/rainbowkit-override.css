@@ -1,0 +1,50 @@
+/* Override RainbowKit styles */
+[data-rk] .rk-modal-container {
+  font-family: 'Arial', sans-serif;
+}
+
+[data-rk] .rk-chain-list {
+  background-color: var(--card-bg);
+}
+
+[data-rk] .rk-wallet-chain-item {
+  background-color: var(--card-bg);
+}
+
+[data-rk] .rk-wallet-option {
+  background-color: var(--card-bg);
+}
+
+[data-rk] .rk-wallet-option-content {
+  color: var(--text-color);
+}
+
+[data-rk] .rk-wallet-option-name {
+  color: var(--text-color);
+}
+
+[data-rk] .rk-connect-header {
+  color: var(--text-color);
+}
+
+[data-rk] .rk-modal-heading {
+  color: var(--text-color);
+}
+
+[data-rk] .rk-chain-item {
+  background-color: var(--card-bg);
+}
+
+[data-rk] .rk-chain-item-title {
+  color: var(--text-color);
+}
+
+/* Ensure the modal has proper z-index */
+[data-rk] .rk-modal-container {
+  z-index: 9999;
+}
+
+/* Ensure the overlay has proper z-index */
+[data-rk] .rk-overlay {
+  z-index: 9998;
+} 

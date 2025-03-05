@@ -19,6 +19,7 @@ import About from './components/About'
 import Header from './components/Header'
 import NotFound from './components/NotFound'
 import './App.css'
+import './styles/rainbowkit-override.css'
 
 // Define global CSS variables
 const globalStyles = css`

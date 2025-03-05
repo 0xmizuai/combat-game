@@ -48,7 +48,9 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
             accentColorForeground: 'white',
             borderRadius: 'medium',
             fontStack: 'system',
+            overlayBlur: 'small',
           })}
+          modalSize="compact"
         >
           <WalletContext.Provider value={{}}>
             {children}

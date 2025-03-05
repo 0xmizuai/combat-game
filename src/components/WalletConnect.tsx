@@ -14,20 +14,82 @@ const WalletSection = styled.div`
   border-radius: 10px;
 `;
 
-const CustomConnectButton = styled.div`
-  .rainbow-button {
-    background-color: var(--mizu-color) !important;
-    
-    &:hover {
-      background-color: #2d9147 !important;
-    }
+const ConnectButtonWrapper = styled.button`
+  background-color: var(--mizu-color);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  font-family: 'Arial', sans-serif;
+  font-size: 16px;
+  
+  &:hover {
+    background-color: #2d9147;
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
   }
 `;
 
-const WalletAddress = styled.p`
-  margin-top: 10px;
-  font-family: monospace;
-  color: var(--text-secondary);
+const WalletInfoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+`;
+
+const ChainBadge = styled.span`
+  background-color: #4285f4;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  
+  &:hover {
+    background-color: #3b77db;
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+`;
+
+const AddressDisplay = styled.span`
+  background-color: var(--mizu-color);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  
+  &:hover {
+    background-color: #2d9147;
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
 `;
 
 const WalletConnect: React.FC = () => {
@@ -52,67 +114,58 @@ const WalletConnect: React.FC = () => {
   
   return (
     <WalletSection>
-      <CustomConnectButton>
-        <ConnectButton.Custom>
-          {({
-            account,
-            chain,
-            openAccountModal,
-            openChainModal,
-            openConnectModal,
-            mounted,
-          }) => {
-            return (
-              <div
-                {...(!mounted && {
-                  'aria-hidden': true,
-                  style: {
-                    opacity: 0,
-                    pointerEvents: 'none',
-                    userSelect: 'none',
-                  },
-                })}
-              >
-                {(() => {
-                  if (!mounted || !account || !chain) {
-                    return (
-                      <button onClick={openConnectModal} type="button" className="rainbow-button">
-                        Connect Wallet
-                      </button>
-                    );
-                  }
-
-                  if (chain.unsupported) {
-                    return (
-                      <button onClick={openChainModal} type="button" className="rainbow-button">
-                        Wrong network
-                      </button>
-                    );
-                  }
-
+      <ConnectButton.Custom>
+        {({
+          account,
+          chain,
+          openAccountModal,
+          openChainModal,
+          openConnectModal,
+          mounted,
+        }) => {
+          return (
+            <div
+              {...(!mounted && {
+                'aria-hidden': true,
+                style: {
+                  opacity: 0,
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                },
+              })}
+            >
+              {(() => {
+                if (!mounted || !account || !chain) {
                   return (
-                    <div style={{ display: 'flex', gap: 12 }}>
-                      <button
-                        onClick={openAccountModal}
-                        type="button"
-                        className="rainbow-button"
-                      >
-                        {account.displayName}
-                      </button>
-                    </div>
+                    <ConnectButtonWrapper onClick={openConnectModal} type="button">
+                      Connect Wallet
+                    </ConnectButtonWrapper>
                   );
-                })()}
-              </div>
-            );
-          }}
-        </ConnectButton.Custom>
-      </CustomConnectButton>
-      
-      {userState.connected && (
-        <WalletAddress>
-          {truncateAddress(userState.address || '')}
-        </WalletAddress>
-      )}
+                }
+
+                if (chain.unsupported) {
+                  return (
+                    <ConnectButtonWrapper onClick={openChainModal} type="button">
+                      Wrong network
+                    </ConnectButtonWrapper>
+                  );
+                }
+
+                return (
+                  <WalletInfoContainer>
+                    <ChainBadge onClick={openChainModal}>
+                      {chain.name}
+                    </ChainBadge>
+                    <AddressDisplay onClick={openAccountModal}>
+                      {truncateAddress(account.address)}
+                    </AddressDisplay>
+                  </WalletInfoContainer>
+                );
+              })()}
+            </div>
+          );
+        }}
+      </ConnectButton.Custom>
     </WalletSection>
   );
 };
