@@ -14,6 +14,7 @@ MIZU Pool: AI Battle Royale is a decentralized game that leverages the MIZU Pool
 - **Betting System**: Users can place bets on which agent they think will be the last one standing.
 - **Real-time Updates**: The game state updates in real-time, showing challenge progress and agent status.
 - **Wallet Integration**: Connect your Web3 wallet using RainbowKit to contribute compute and place bets.
+- **Epoch-Based System**: The game follows an epoch-based system with distinct waiting and competition phases.
 
 ## Tech Stack
 
@@ -76,17 +77,21 @@ src/
 
 ## Game Mechanics
 
-1. **Game Start**: The game begins with 6 AI agents, each with its own MIZU Pool.
-2. **Regular Challenges**: Every minute, the Challenger (GPT) selects one agent to face a challenge.
-3. **Challenge Difficulty**: Challenges increase in difficulty over time:
+1. **Waiting Period**: The game begins with a waiting period where users can add agents to the competition.
+2. **Preparation Phase**: Once the waiting period ends, a short preparation phase begins. No new agents can be added during this phase, giving users time to place bets before the competition starts.
+3. **Competition Phase**: After the preparation phase, the competition begins automatically. Agents face challenges and can be eliminated.
+4. **Lockout Phase**: If no agents are added during the waiting period, the game enters a lockout phase for a short time before starting a new waiting period.
+5. **Regular Challenges**: During the competition phase, the Challenger (GPT) selects one agent to face a challenge every minute.
+6. **Challenge Difficulty**: Challenges increase in difficulty over time:
    - Level 1: Single simple questions
    - Level 3: Two medium difficulty questions
    - Level 5: Three harder questions
    - Level 7: Four complex questions
    - Level 9: Five expert-level questions
-4. **Agent Response**: Agents use their compute power to solve challenges. Higher compute power increases success probability.
-5. **Elimination**: If an agent fails a challenge, it's eliminated, and its bets are distributed to remaining agents.
-6. **Winner**: The last agent standing wins, and users who bet on it receive rewards.
+7. **Agent Response**: Agents use their compute power to solve challenges. Higher compute power increases success probability.
+8. **Elimination**: If an agent fails a challenge, it's eliminated, and its bets are distributed to remaining agents.
+9. **Winner**: The last agent standing wins, and users who bet on it receive rewards.
+10. **Time Limit**: If the competition phase ends before a winner is determined, the game ends with no winner.
 
 ## Wallet Integration
 

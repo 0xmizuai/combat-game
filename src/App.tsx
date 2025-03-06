@@ -6,18 +6,11 @@ import { CONFIG } from './utils/config'
 import { GameProvider } from './contexts/GameContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { WalletProvider } from './contexts/WalletContext'
-import WalletConnect from './components/WalletConnect'
-import MizuPoolStats from './components/MizuPoolStats'
-import GameStatus from './components/GameStatus'
-import GameControls from './components/GameControls'
-import Challenge from './components/Challenge'
-import AgentsList from './components/AgentsList'
-import GameResults from './components/GameResults'
-import Leaderboard from './components/Leaderboard'
-import GameHistory from './components/GameHistory'
-import About from './components/About'
-import Header from './components/Header'
 import NotFound from './components/NotFound'
+import Navbar from './components/Navbar'
+import HomePage from './pages/HomePage'
+import LeaderboardPage from './pages/LeaderboardPage'
+import AboutPage from './pages/AboutPage'
 import './App.css'
 import './styles/rainbowkit-override.css'
 
@@ -55,22 +48,6 @@ const Container = styled.div`
   padding: 20px;
 `
 
-const HomePage = () => (
-  <>
-    <Header />
-    <WalletConnect />
-    <MizuPoolStats />
-    <GameStatus />
-    <GameControls />
-    <Challenge />
-    <GameResults />
-    <Leaderboard />
-    <GameHistory />
-    <AgentsList />
-    <About />
-  </>
-)
-
 function App() {
   return (
     <ToastProvider>
@@ -79,8 +56,11 @@ function App() {
           <Global styles={globalStyles} />
           <AppWrapper>
             <Container>
+              <Navbar />
               <Routes>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/leaderboard" element={<LeaderboardPage />} />
+                <Route path="/about" element={<AboutPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Container>

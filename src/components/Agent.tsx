@@ -140,15 +140,6 @@ const Button = styled.button`
   }
 `;
 
-const ContributeButton = styled(Button)`
-  background-color: var(--mizu-color);
-  color: white;
-  
-  &:hover {
-    background-color: #2d9147;
-  }
-`;
-
 const BetButton = styled(Button)`
   background-color: var(--warning-color);
   color: black;
@@ -156,36 +147,46 @@ const BetButton = styled(Button)`
   &:hover {
     background-color: #e0a800;
   }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    background-color: #a9a9a9;
+  }
+`;
+
+// Add a styled link component
+const MizuPoolLink = styled.a`
+  display: block;
+  padding: 12px 20px;
+  background-color: var(--mizu-color);
+  color: white;
+  text-align: center;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.2s, transform 0.1s;
+  
+  &:hover {
+    background-color: #2d9147;
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+`;
+
+const LinkIcon = styled.span`
+  margin-left: 8px;
 `;
 
 const Agent: React.FC<AgentProps> = ({ agent }) => {
-  const { contributeCompute, placeBet, userState, gameState } = useGame();
+  const { placeBet, userState, gameState } = useGame();
   const { showToast } = useToast();
-  const [computeAmount, setComputeAmount] = useState<number>(10);
   const [betAmount, setBetAmount] = useState<number>(10);
-  
-  const handleContribute = async () => {
-    if (!userState.connected) {
-      showToast('Please connect your wallet first', 'warning');
-      return;
-    }
-    
-    if (!agent.alive) {
-      showToast('Cannot contribute to eliminated agents', 'error');
-      return;
-    }
-    
-    if (computeAmount <= 0) {
-      showToast('Please enter a valid amount', 'warning');
-      return;
-    }
-    
-    try {
-      await contributeCompute(agent.id, computeAmount);
-    } catch {
-      showToast('Failed to contribute compute. Please try again.', 'error');
-    }
-  };
+  const [isPlacingBet, setIsPlacingBet] = useState<boolean>(false);
   
   const handleBet = async () => {
     if (!userState.connected) {
@@ -198,15 +199,26 @@ const Agent: React.FC<AgentProps> = ({ agent }) => {
       return;
     }
     
+    if (gameState.gamePhase !== 'competition') {
+      showToast('Betting is only allowed during the competition phase', 'warning');
+      return;
+    }
+    
     if (betAmount <= 0) {
       showToast('Please enter a valid amount', 'warning');
       return;
     }
     
     try {
+      setIsPlacingBet(true);
       await placeBet(agent.id, betAmount);
-    } catch {
+      // Reset bet amount after successful bet
+      setBetAmount(10);
+    } catch (error) {
+      console.error('Betting error:', error);
       showToast('Failed to place bet. Please try again.', 'error');
+    } finally {
+      setIsPlacingBet(false);
     }
   };
   
@@ -256,46 +268,49 @@ const Agent: React.FC<AgentProps> = ({ agent }) => {
         </SupportersList>
       )}
       
-      {agent.alive && gameState.gameActive && (
+      {agent.alive && gameState.gamePhase === 'competition' && (
         <Actions>
           <ActionGroup>
-            <ActionTitle>Contribute Compute</ActionTitle>
-            <ActionInputs>
-              <Input
-                type="number"
-                min="1"
-                value={computeAmount}
-                onChange={(e) => setComputeAmount(parseInt(e.target.value) || 0)}
-              />
-            </ActionInputs>
-            <ActionButtons>
-              <ContributeButton 
-                onClick={handleContribute}
-                disabled={!userState.connected}
-              >
-                Contribute
-              </ContributeButton>
-            </ActionButtons>
+            <ActionTitle>Connect to MIZU Pool</ActionTitle>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '15px' }}>
+              Contribute compute by connecting your laptop directly to this agent's MIZU Pool.
+            </p>
+            <MizuPoolLink 
+              href={`https://pool-staging.mizu.technology/poolDetail/${agent.mizuPoolId.replace('pool-', '')}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              Connect to MIZU Pool <LinkIcon>↗</LinkIcon>
+            </MizuPoolLink>
           </ActionGroup>
           
           <ActionGroup>
             <ActionTitle>Place Bet</ActionTitle>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '15px' }}>
+              Place a bet on this agent using your connected wallet. If the agent wins, you'll receive rewards proportional to your bet.
+            </p>
             <ActionInputs>
               <Input
                 type="number"
                 min="1"
                 value={betAmount}
                 onChange={(e) => setBetAmount(parseInt(e.target.value) || 0)}
+                disabled={isPlacingBet}
               />
             </ActionInputs>
             <ActionButtons>
               <BetButton 
                 onClick={handleBet}
-                disabled={!userState.connected}
+                disabled={!userState.connected || isPlacingBet}
               >
-                Place Bet
+                {isPlacingBet ? 'Processing...' : 'Place Bet'}
               </BetButton>
             </ActionButtons>
+            {!userState.connected && (
+              <p style={{ fontSize: '12px', color: 'var(--danger-color)', marginTop: '10px' }}>
+                Please connect your wallet to place bets.
+              </p>
+            )}
           </ActionGroup>
         </Actions>
       )}

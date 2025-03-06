@@ -1,8 +1,14 @@
 export const CONFIG = {
   // Game parameters
-  challengeInterval: 60000, // 1 minute between challenges (in ms)
+  challengeInterval: 15000, // 15 seconds between challenges (in ms)
   initialAgentCount: 6, // Number of agents at the start
   maxAgentCount: 8, // Maximum number of agents allowed
+  
+  // Epoch parameters
+  waitingPeriodDuration: 60000, // 1 minute waiting period (in ms)
+  preparationPeriodDuration: 60000, // 1 minute preparation period (in ms)
+  competitionDuration: 60000, // 1 minute competition period (in ms)
+  lockoutPeriodDuration: 60000, // 1 minute lockout period if no agents added (in ms)
   
   // Challenge parameters
   initialDifficulty: 1, // Starting difficulty level
@@ -25,7 +31,7 @@ export const CONFIG = {
   updateInterval: 1000, // ms between UI updates
   
   // Challenge time limits (in ms)
-  challengeTimeLimit: 30000, // 30 seconds
+  challengeTimeLimit: 20000, // 20 seconds
   
   // Colors
   colors: {

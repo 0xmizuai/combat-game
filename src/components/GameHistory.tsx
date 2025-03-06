@@ -9,15 +9,33 @@ const HistoryContainer = styled.div`
   margin-bottom: 30px;
 `;
 
+const HistoryHeader = styled.div<{ expanded: boolean }>`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: ${props => props.expanded ? '20px' : '0'};
+  cursor: pointer;
+`;
+
 const HistoryTitle = styled.h2`
   font-size: 1.5rem;
-  margin-bottom: 20px;
-  text-align: center;
+  margin: 0;
   color: var(--text-secondary);
 `;
 
+const ToggleIcon = styled.span<{ expanded: boolean }>`
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+  transform: ${props => props.expanded ? 'rotate(180deg)' : 'rotate(0)'};
+`;
+
+const HistoryContent = styled.div<{ expanded: boolean }>`
+  max-height: ${props => props.expanded ? '500px' : '0'};
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+`;
+
 const HistoryList = styled.div`
-  max-height: 300px;
   overflow-y: auto;
   padding-right: 10px;
   
@@ -57,7 +75,7 @@ const HistoryItemHeader = styled.div`
   margin-bottom: 10px;
 `;
 
-const AgentName = styled.div`
+const ChallengeNumber = styled.div`
   font-weight: bold;
   font-size: 1.1rem;
 `;
@@ -67,15 +85,18 @@ const ChallengeTime = styled.div`
   color: var(--text-secondary);
 `;
 
-const ChallengeResult = styled.div<{ success: boolean | null }>`
+const ChallengeStatus = styled.div<{ evaluated: boolean }>`
   font-weight: bold;
-  color: ${props => 
-    props.success === null 
-      ? 'var(--warning-color)' 
-      : props.success 
-        ? 'var(--success-color)' 
-        : 'var(--danger-color)'
-  };
+  color: ${props => props.evaluated ? 'var(--success-color)' : 'var(--warning-color)'};
+`;
+
+const WinnerInfo = styled.div`
+  margin-top: 10px;
+  font-weight: bold;
+`;
+
+const WinnerName = styled.span`
+  color: var(--success-color);
 `;
 
 const ChallengeQuestions = styled.div`
@@ -93,6 +114,12 @@ const ChallengeQuestions = styled.div`
   li {
     margin-bottom: 5px;
   }
+`;
+
+const ResponsesInfo = styled.div`
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
 `;
 
 const ToggleButton = styled.button`
@@ -119,54 +146,66 @@ const EmptyState = styled.div`
 
 interface ChallengeHistoryItem {
   id: string;
-  agentId: string;
-  agentName: string;
+  round: number;
   time: number;
-  success: boolean | null;
+  evaluated: boolean;
+  winnerId: string | null;
+  winnerName: string | null;
   questions: string[];
+  responseCount: number;
 }
 
 const GameHistory: React.FC = () => {
   const { gameState } = useGame();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [isExpanded, setIsExpanded] = useState(false);
   
   // Create a history of challenges from the game state
   const challengeHistory = useMemo(() => {
     const history: ChallengeHistoryItem[] = [];
+    let round = gameState.currentRound;
     
     // Add the current challenge if it exists
     if (gameState.currentChallenge) {
-      const agent = gameState.agents[gameState.currentChallenge.agentId];
-      if (agent) {
-        history.push({
-          id: gameState.currentChallenge.id,
-          agentId: agent.id,
-          agentName: agent.name,
-          time: gameState.currentChallenge.startTime,
-          success: gameState.currentChallenge.success,
-          questions: gameState.currentChallenge.questions,
-        });
-      }
+      const winnerAgent = gameState.currentChallenge.winner 
+        ? gameState.agents[gameState.currentChallenge.winner] 
+        : null;
+      
+      history.push({
+        id: gameState.currentChallenge.id,
+        round: round,
+        time: gameState.currentChallenge.startTime,
+        evaluated: gameState.currentChallenge.evaluated,
+        winnerId: gameState.currentChallenge.winner,
+        winnerName: winnerAgent ? winnerAgent.name : null,
+        questions: gameState.currentChallenge.questions,
+        responseCount: Object.keys(gameState.currentChallenge.responses).length
+      });
+      
+      round--;
     }
     
     // Add past challenges from history
-    gameState.challengeHistory.forEach(challenge => {
-      const agent = gameState.agents[challenge.agentId];
-      if (agent) {
-        history.push({
-          id: challenge.id,
-          agentId: agent.id,
-          agentName: agent.name,
-          time: challenge.startTime,
-          success: challenge.success,
-          questions: challenge.questions,
-        });
-      }
+    gameState.challengeHistory.forEach((challenge, index) => {
+      const winnerAgent = challenge.winner 
+        ? gameState.agents[challenge.winner] 
+        : null;
+      
+      history.push({
+        id: challenge.id,
+        round: round - index,
+        time: challenge.startTime,
+        evaluated: challenge.evaluated,
+        winnerId: challenge.winner,
+        winnerName: winnerAgent ? winnerAgent.name : null,
+        questions: challenge.questions,
+        responseCount: Object.keys(challenge.responses).length
+      });
     });
     
     // Sort challenges by time (most recent first)
     return history.sort((a, b) => b.time - a.time);
-  }, [gameState.currentChallenge, gameState.challengeHistory, gameState.agents]);
+  }, [gameState.currentChallenge, gameState.challengeHistory, gameState.agents, gameState.currentRound]);
   
   const toggleExpand = (id: string) => {
     setExpandedItems(prev => ({
@@ -175,52 +214,74 @@ const GameHistory: React.FC = () => {
     }));
   };
   
+  const toggleSection = () => {
+    setIsExpanded(!isExpanded);
+  };
+  
   if (challengeHistory.length === 0 && !gameState.gameActive) {
     return null;
   }
   
   return (
     <HistoryContainer>
-      <HistoryTitle>Challenge History</HistoryTitle>
+      <HistoryHeader onClick={toggleSection} expanded={isExpanded}>
+        <HistoryTitle>Challenge History</HistoryTitle>
+        <ToggleIcon expanded={isExpanded}>▼</ToggleIcon>
+      </HistoryHeader>
       
-      <HistoryList>
-        {challengeHistory.length > 0 ? (
-          challengeHistory.map(challenge => (
-            <HistoryItem key={challenge.id}>
-              <HistoryItemHeader>
-                <AgentName>{challenge.agentName}</AgentName>
-                <ChallengeTime>
-                  {new Date(challenge.time).toLocaleTimeString()}
-                </ChallengeTime>
-              </HistoryItemHeader>
-              
-              <ChallengeResult success={challenge.success}>
-                {challenge.success === null 
-                  ? 'In Progress...' 
-                  : challenge.success 
-                    ? 'SUCCESS' 
-                    : 'FAILED'}
-              </ChallengeResult>
-              
-              <ToggleButton onClick={() => toggleExpand(challenge.id)}>
-                {expandedItems[challenge.id] ? 'Hide Questions' : 'Show Questions'}
-              </ToggleButton>
-              
-              {expandedItems[challenge.id] && (
-                <ChallengeQuestions>
-                  <ol>
-                    {challenge.questions.map((question, index) => (
-                      <li key={index}>{question}</li>
-                    ))}
-                  </ol>
-                </ChallengeQuestions>
-              )}
-            </HistoryItem>
-          ))
-        ) : (
-          <EmptyState>No challenges yet</EmptyState>
-        )}
-      </HistoryList>
+      <HistoryContent expanded={isExpanded}>
+        <HistoryList>
+          {challengeHistory.length > 0 ? (
+            challengeHistory.map(challenge => (
+              <HistoryItem key={challenge.id}>
+                <HistoryItemHeader>
+                  <ChallengeNumber>Challenge {challenge.round}</ChallengeNumber>
+                  <ChallengeTime>
+                    {new Date(challenge.time).toLocaleTimeString()}
+                  </ChallengeTime>
+                </HistoryItemHeader>
+                
+                <ChallengeStatus evaluated={challenge.evaluated}>
+                  {challenge.evaluated ? 'Evaluated' : 'In Progress...'}
+                </ChallengeStatus>
+                
+                {challenge.evaluated && (
+                  <WinnerInfo>
+                    Winner: {challenge.winnerName ? (
+                      <WinnerName>{challenge.winnerName}</WinnerName>
+                    ) : (
+                      'No winner'
+                    )}
+                  </WinnerInfo>
+                )}
+                
+                <ResponsesInfo>
+                  {challenge.responseCount} agent{challenge.responseCount !== 1 ? 's' : ''} responded
+                </ResponsesInfo>
+                
+                <ToggleButton onClick={(e) => {
+                  e.stopPropagation();
+                  toggleExpand(challenge.id);
+                }}>
+                  {expandedItems[challenge.id] ? 'Hide Questions' : 'Show Questions'}
+                </ToggleButton>
+                
+                {expandedItems[challenge.id] && (
+                  <ChallengeQuestions>
+                    <ol>
+                      {challenge.questions.map((question, index) => (
+                        <li key={index}>{question}</li>
+                      ))}
+                    </ol>
+                  </ChallengeQuestions>
+                )}
+              </HistoryItem>
+            ))
+          ) : (
+            <EmptyState>No challenges have been completed yet.</EmptyState>
+          )}
+        </HistoryList>
+      </HistoryContent>
     </HistoryContainer>
   );
 };

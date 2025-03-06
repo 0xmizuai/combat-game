@@ -8,17 +8,31 @@ export interface Agent {
   totalBets: number;
   challengesCompleted: number;
   lastChallengeTime: number;
+  model: string;
+  apiKey: string;
 }
 
 export interface Challenge {
   id: string;
-  agentId: string;
   questions: string[];
   difficulty: number;
   startTime: number;
   endTime: number | null;
-  success: boolean | null;
   timeLimit: number;
+  responses: Record<string, AgentResponse>;
+  winner: string | null;
+  evaluated: boolean;
+}
+
+export interface AgentResponse {
+  agentId: string;
+  response: string;
+  submittedAt: number;
+  score: {
+    correctness: number;
+    completeness: number;
+    total: number;
+  } | null;
 }
 
 export interface GameState {
@@ -32,6 +46,11 @@ export interface GameState {
   difficulty: number;
   winner: string | null;
   challengeHistory: Challenge[];
+  gamePhase: 'waiting' | 'preparation' | 'competition' | 'completed' | 'locked';
+  waitingPeriodEndTime: number;
+  preparationEndTime: number;
+  competitionEndTime: number;
+  lockoutEndTime: number;
 }
 
 export interface MizuPoolStats {
